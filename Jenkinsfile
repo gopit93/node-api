@@ -1,56 +1,50 @@
 pipeline {
     agent any
-
     environment {
         IMAGE_NAME = 'node-api'
-        DEV_TAG = 'dev'
-        TEST_TAG = 'test'
+        CONTAINER_NAME = 'node-api-container'
+        JENKINS_CONTAINER_NAME = 'jenkins'
     }
-
     stages {
-        stage('Checkout') {
+        stage('Clone Repo') {
             steps {
-                git url: 'https://your-repo-url.git', branch: 'main'
+                git credentialsId: 'github-creds', branch: 'main', url: 'https://github.com/gopit93/node-api.git'
             }
         }
 
         stage('Build Docker Image') {
             steps {
                 script {
-                    sh "docker build -t $IMAGE_NAME:$DEV_TAG ."
+                    COMMIT_HASH = sh(script: "git rev-parse --short HEAD", returnStdout: true).trim()
+                    TIMESTAMP = sh(script: "date +%Y%m%d-%H%M%S", returnStdout: true).trim()
+                    IMAGE_TAG = "${IMAGE_NAME}:${TIMESTAMP}-${COMMIT_HASH}"
+                    env.IMAGE_TAG = IMAGE_TAG
+                    sh "docker build -t $IMAGE_TAG ."
                 }
             }
         }
 
-        stage('Run Dev Container') {
+        stage('Stop Old Container') {
             steps {
-                script {
-                    sh "docker run -d -p 3000:3000 --name node-dev $IMAGE_NAME:$DEV_TAG"
-                }
+                // Ensure we don't stop or remove the Jenkins container
+                sh '''
+                    if [ "$(docker ps -q -f name=$CONTAINER_NAME)" ]; then
+                        docker stop $CONTAINER_NAME || true
+                        docker rm $CONTAINER_NAME || true
+                    fi
+                '''
             }
         }
 
-        stage('Test') {
+        stage('Run New Container') {
             steps {
-                script {
-                    echo "✅ You can run integration/unit tests here"
-                }
+                sh 'docker run -d -p 3000:3000 --name $CONTAINER_NAME $IMAGE_TAG'
             }
         }
 
-        stage('Tag as Test') {
+        stage('Tag as Latest') {
             steps {
-                script {
-                    sh "docker tag $IMAGE_NAME:$DEV_TAG $IMAGE_NAME:$TEST_TAG"
-                }
-            }
-        }
-
-        stage('Cleanup') {
-            steps {
-                script {
-                    sh "docker rm -f node-dev || true"
-                }
+                sh 'docker tag $IMAGE_TAG $IMAGE_NAME:latest'
             }
         }
     }
