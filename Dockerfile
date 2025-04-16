@@ -1,18 +1,18 @@
-# Use official Node.js image
-FROM node:16-slim
+# Use smaller, faster image
+FROM node:16-alpine
 
 # Set working directory
 WORKDIR /app
 
-# Copy package files and install dependencies
+# Install only production dependencies
 COPY package*.json ./
-RUN npm install
+RUN npm ci --only=production
 
-# Copy app files
+# Copy rest of the app
 COPY . .
 
 # Expose port
 EXPOSE 3000
 
-# Start the app
+# Run the app
 CMD ["npm", "start"]
