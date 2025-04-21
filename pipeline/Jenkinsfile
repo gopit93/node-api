@@ -39,9 +39,12 @@ pipeline {
         }
         stage('Docker Push') {
             steps {
-                script {
-                    docker login -u gopit93 -p Gopi__t93
-                    sh 'docker push node-api:20250421-1130-abc123'
+                withCredentials([usernamePassword(credentialsId: 'dockerhub-creds', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
+                    sh '''
+                        echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
+                        docker tag node-api:${BUILD_TAG} $DOCKER_USER/node-api:${BUILD_TAG}
+                        docker push $DOCKER_USER/node-api:${BUILD_TAG}
+                    '''    
                 }
             }
         }
