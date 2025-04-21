@@ -31,7 +31,7 @@ pipeline {
         stage('Docker Push') {
             steps {
                 script {
-                    sh 'docker login -u {gopit93} -p {Gopi__t93}'
+                    docker login -u gopit93 -p Gopi__t93
                     sh 'docker push node-api:20250421-1130-abc123'
                 }
             }
