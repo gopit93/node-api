@@ -24,22 +24,22 @@ pipeline {
         stage('Docker Build') {
             steps {
                 script {
-                    sh 'docker build -t {docker_image_name}:{tag} .'
+                    sh 'docker build -t node-api:20250421-1130-abc123 .'
                 }
             }
         }
         stage('Docker Push') {
             steps {
                 script {
-                    sh 'docker login -u {docker_username} -p {docker_password}'
-                    sh 'docker push {docker_image_name}:{tag}'
+                    sh 'docker login -u {gopit93} -p {Gopi__t93}'
+                    sh 'docker push node-api:20250421-1130-abc123'
                 }
             }
         }
         stage('Deploy') {
             steps {
                 script {
-                    sh 'docker run -d -p 3000:3000 {docker_image_name}:{tag}'
+                    sh 'docker run -d -p 3000:3000 node-api:20250421-1130-abc123'
                 }
             }
         }
