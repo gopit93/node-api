@@ -49,11 +49,13 @@ pipeline {
 
         stage('Deploy') {
             steps {
-                sh '''
-                    docker stop node-api || true
-                    docker rm node-api || true
-                    docker run -d --name node-api -p 3000:3000 $DOCKER_REPO:$IMAGE_TAG
-                '''
+                script {
+                    sh '''
+                        docker stop node-api || true
+                        docker rm node-api || true
+                        docker run -d --name node-api -p 3000:3000 $DOCKER_REPO:$IMAGE_TAG
+                    '''
+                }
             }
         }
     }
