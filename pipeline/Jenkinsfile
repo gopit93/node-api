@@ -52,10 +52,5 @@ pipeline {
                 sh 'docker run -d -p 3000:3000 $DOCKER_REPO:$IMAGE_TAG'
             }
         }
-        stage('status') {
-            steps {
-                sh 'echo "Deploying to production server..."'
-            }
-        }
     }
 }
